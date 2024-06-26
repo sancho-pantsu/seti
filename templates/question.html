@@ -34,14 +34,14 @@
         {% elif question.correct | length == 1 %}
             {% for answer in question.answers %}
                 <div>
-                    <input type="radio" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and answer in result[0] %}checked{% endif %}>
+                    <input type="radio" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and result[0] and answer in result[0] %}checked{% endif %}>
                     <label for="{{ answer }}" class="{% if result %}{{ 'correct' if answer in question.correct else 'incorrect' }}{% endif %}">{{ answer }}</label>
                 </div>
             {% endfor %}
         {% else %}
             {% for answer in question.answers %}
                 <div>
-                    <input type="checkbox" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and answer in result[0] %}checked{% endif %}>
+                    <input type="checkbox" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and result[0] and answer in result[0] %}checked{% endif %}>
                     <label for="{{ answer }}" class="{% if result %}{{ 'correct' if answer in question.correct else 'incorrect' }}{% endif %}">{{ answer }}</label>
                 </div>
             {% endfor %}

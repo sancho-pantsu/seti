@@ -4,15 +4,40 @@
     <meta charset="UTF-8">
     <title>{{ test_name }} - Результаты</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .correct { color: green; }
+        .incorrect { color: red; }
+        .missed-correct { color: orange; }
+    </style>
 </head>
 <body>
     <h1>Результаты теста {{ test_name }}</h1>
     <ul>
         {% for question_id, result in results.items() %}
             <li>
-                Вопрос {{ question_id }}:
-                {{ questions[question_id]['question'] }}<br>
-                Ваши ответы: {{ result[0] | join(', ') }} - {% if result[1] %}Правильно{% else %}Неправильно{% endif %}
+                <strong>{{ questions[question_id]['question'] }}</strong><br>
+                <em>Ваши ответы:</em>
+                <ul>
+                    {% for answer in result[0] %}
+                        <li class="{% if answer in questions[question_id]['correct'] %}correct{% else %}incorrect{% endif %}">
+                            {{ answer }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% set missed_correct = [] %}
+                {% for answer in questions[question_id]['correct'] %}
+                    {% if answer not in result[0] %}
+                        {% set _ = missed_correct.append(answer) %}
+                    {% endif %}
+                {% endfor %}
+                {% if missed_correct %}
+                    <em>Правильные ответы, которые были не отмечены:</em>
+                    <ul>
+                        {% for answer in missed_correct %}
+                            <li class="missed-correct">{{ answer }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>

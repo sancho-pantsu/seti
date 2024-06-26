@@ -1,8 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_session import Session
 import os
 import json
+import uuid
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SESSION_TYPE'] = 'filesystem'
 
 DATA_DIR = 'static/data'
 PROGRESS_FILE = 'progress.json'
@@ -40,24 +45,21 @@ def load_questions():
 
 
 def load_progress():
-    if os.path.exists(PROGRESS_FILE):
-        with open(PROGRESS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {}
+    return session.get('progress', {})
 
 
 def save_progress(progress):
-    with open(PROGRESS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(progress, f)
+    session['progress'] = progress
 
 
-def reset_progress():
-    if os.path.exists(PROGRESS_FILE):
-        os.remove(PROGRESS_FILE)
+def reset_progress(testname):
+    progress = load_progress()
+    if testname in progress:
+        del progress[testname]
+    save_progress(progress)
 
 
 questions_data = load_questions()
-progress_data = load_progress()
 
 
 @app.route('/')
@@ -80,6 +82,8 @@ def question(test_name, question_id):
         return "Question not found", 404
 
     question = questions_data[test_name][question_id]
+    progress_data = load_progress()
+
     if request.method == 'POST':
         correct_answers = question['correct']
         answers = request.form.getlist('answers')
@@ -100,24 +104,29 @@ def question(test_name, question_id):
     if current_index > 0:
         prev_question_id = question_ids[current_index - 1]
 
-    result = progress_data[test_name].get(question_id) if test_name in progress_data else None
+    result = progress_data.get(test_name, {}).get(question_id)
     return render_template('question.html', test_name=test_name, question=question, question_id=question_id,
                            next_question_id=next_question_id, prev_question_id=prev_question_id, result=result)
 
 
 @app.route('/result/<test_name>')
 def result(test_name):
+    progress_data = load_progress()
     if test_name not in progress_data:
         return "No progress found for this test", 404
     results = progress_data[test_name]
+    unanswered_questions = [q_id for q_id in questions_data[test_name].keys() if q_id not in results or not results[q_id][0]]
+    if unanswered_questions:
+        return render_template('unanswered.html', test_name=test_name, unanswered_questions=unanswered_questions)
     return render_template('result.html', test_name=test_name, results=results, questions=questions_data[test_name])
 
 
 @app.route('/reset/<test_name>')
 def reset(test_name):
-    reset_progress()
+    reset_progress(test_name)
     return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
+    Session(app)
     app.run(debug=True)
