@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ test_name }} - Вопрос {{ question_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>{{ question.question }}</h1>
+    {% if question.images %}
+        <div>
+            {% for image in question.images %}
+                <img src="{{ url_for('static', filename='data/' + test_name + '/images/' + image) }}" alt="Изображение">
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form action="{{ url_for('submit_answer', test_name=test_name, question_id=question_id) }}" method="post">
+        {% for answer in question.answers %}
+            <div>
+                <input type="checkbox" id="{{ answer }}" name="answers" value="{{ answer }}">
+                <label for="{{ answer }}">{{ answer }}</label>
+            </div>
+        {% endfor %}
+        <button type="submit">Ответить</button>
+    </form>
+</body>
+</html>

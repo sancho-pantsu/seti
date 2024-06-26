@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ test_name }} - Результаты</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Результаты теста {{ test_name }}</h1>
+    <ul>
+        {% for question_id, result in results.items() %}
+            <li>
+                Вопрос {{ question_id }}:
+                {{ questions[question_id]['question'] }}<br>
+                Ваши ответы: {{ result[0] | join(', ') }} - {% if result[1] %}Правильно{% else %}Неправильно{% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Вернуться к списку тестов</a>
+</body>
+</html>

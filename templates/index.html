@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Экзаменационная тренировка</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Выберите тест для прохождения:</h1>
+    <ul>
+        {% for test in tests %}
+            <li><a href="{{ url_for('test', test_name=test) }}">{{ test }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
