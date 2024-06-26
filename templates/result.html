@@ -16,6 +16,6 @@
             </li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('index') }}">Вернуться к списку тестов</a>
+    <a href="{{ url_for('reset', test_name=test_name) }}">Завершить</a>
 </body>
 </html>

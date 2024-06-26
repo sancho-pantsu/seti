@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <title>{{ test_name }} - Вопрос {{ question_id }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .correct { color: green; }
+        .incorrect { color: red; }
+        .nav-buttons {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ question.question }}</h1>
@@ -14,14 +26,46 @@
             {% endfor %}
         </div>
     {% endif %}
-    <form action="{{ url_for('submit_answer', test_name=test_name, question_id=question_id) }}" method="post">
-        {% for answer in question.answers %}
+    <form id="answerForm" action="{{ url_for('question', test_name=test_name, question_id=question_id) }}" method="post">
+        {% if question.answers | length == 1 %}
             <div>
-                <input type="checkbox" id="{{ answer }}" name="answers" value="{{ answer }}">
-                <label for="{{ answer }}">{{ answer }}</label>
+                <input type="text" name="answer" value="{{ result[0][0] if result else '' }}">
             </div>
-        {% endfor %}
-        <button type="submit">Ответить</button>
+        {% elif question.correct | length == 1 %}
+            {% for answer in question.answers %}
+                <div>
+                    <input type="radio" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and answer in result[0] %}checked{% endif %}>
+                    <label for="{{ answer }}" class="{% if result %}{{ 'correct' if answer in question.correct else 'incorrect' }}{% endif %}">{{ answer }}</label>
+                </div>
+            {% endfor %}
+        {% else %}
+            {% for answer in question.answers %}
+                <div>
+                    <input type="checkbox" id="{{ answer }}" name="answers" value="{{ answer }}" {% if result and answer in result[0] %}checked{% endif %}>
+                    <label for="{{ answer }}" class="{% if result %}{{ 'correct' if answer in question.correct else 'incorrect' }}{% endif %}">{{ answer }}</label>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <button type="submit" style="display: none;">Ответить</button>
     </form>
+    <div class="nav-buttons">
+        {% if prev_question_id %}
+            <a href="{{ url_for('question', test_name=test_name, question_id=prev_question_id) }}">Назад</a>
+        {% endif %}
+        <button type="submit" form="answerForm">Ответить</button>
+        {% if next_question_id %}
+            <a href="{{ url_for('question', test_name=test_name, question_id=next_question_id) }}">Вперед</a>
+        {% else %}
+            <a href="{{ url_for('result', test_name=test_name) }}">Показать результаты</a>
+        {% endif %}
+    </div>
+    <script>
+        document.getElementById('answerForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.submit();
+            }
+        });
+    </script>
 </body>
 </html>
